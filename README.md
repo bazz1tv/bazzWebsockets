@@ -26,6 +26,8 @@ Models
 Scratchpad
 ==========
 
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+
 SELECT * FROM Subs;
 
 SELECT name, SUM(amount) FROM Bits GROUP BY name;
