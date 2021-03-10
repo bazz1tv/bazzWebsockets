@@ -202,5 +202,21 @@ async function calcEntries(user)
 	console.log(`${user} has ${entries} entries`);
 }
 
-calcPoolMoney();
-calcEntries('ns3c');
+async function getAllEntrants()
+{
+	/* SELECT name from Subs WHERE gifted=false UNION
+	   SELECT sender from Subs WHERE gifted=true UNION
+	   SELECT name from Tips UNION
+	   SELECT name from Bits; */
+	const names = await db.sequelize.query(
+	   "SELECT name from Subs WHERE gifted=false UNION \
+		SELECT sender from Subs WHERE gifted=true UNION \
+		SELECT name from Tips UNION \
+		SELECT name from Bits", { type: db.Sequelize.SELECT });
+	//console.log(names);
+	return names;
+}
+
+//calcPoolMoney();
+//calcEntries('ns3c');
+getAllEntrants();
