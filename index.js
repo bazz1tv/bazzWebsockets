@@ -209,15 +209,20 @@ http.createServer(async function (req, res) {
         return;
     }
     else res.writeHead(200, {'Content-Type': 'text/html'});
-  var q = url.parse(req.url, true).query;
-  if (q.cmd === "nukem")
+  const {pathname, query, href} = url.parse(req.url, true);
+  console.log(`web server request: ${href}`);
+  if (pathname == "/bazz/auth" || pathname == "/bazz/auth/")
+  {
+
+  }
+  if (query.cmd === "nukem")
   {
     /*obs.send('SetCurrentScene', {
         'scene-name': 'Just me (Fade)'
     })*/
     response = nukem();
   }
-  else if (q.cmd === "GetPoolMoney")
+  else if (query.cmd === "GetPoolMoney")
   {
     response = (await calcPoolMoney()).toString();
     //console.log(response);
@@ -274,11 +279,11 @@ function nukem()
     if (curtime > Wait)
     {
         Wait = new Date(new Date().getTime() + 30 * 1000);
-        function1(false);
-        setTimeout(function() { function1(true) }, 100);
-        setTimeout(function() { function3(false) }, 400);
-        setTimeout(function() { function1(false) }, 8000);
-        setTimeout(function() { function3(true) }, 30 * 1000);
+        setNuke(false);
+        setTimeout(function() { setNuke(true) }, 100);
+        setTimeout(function() { setEmotes(false) }, 400);
+        setTimeout(function() { setNuke(false) }, 8000);
+        setTimeout(function() { setEmotes(true) }, 30 * 1000);
     }
     else
     {
@@ -290,7 +295,7 @@ function nukem()
 }
 
 
-function function1(vis)
+function setNuke(vis)
 {
     obs.send('SetSceneItemProperties', {
         'scene-name': 'overlay',
@@ -320,7 +325,7 @@ function function1(vis)
     });
 }
 
-function function3(vis)
+function setEmotes(vis)
 {
     obs.send('SetSceneItemProperties', {
         'scene-name': 'overlay',

@@ -1,7 +1,7 @@
 What
 ====
 
-Persistent Stream events tracking (even when stream offline, hopefully) and
+Persistent Stream events tracking (even when stream offline) and
 recording into database.
 
 New and Resubs
@@ -13,6 +13,16 @@ How
 ===
 
 StreamElements Websocket API
+
+TODO
+====
+
+1) Rework the Overlay
+2) Use and log Realworld events (run in development mode)
+3) Hooking into bazz1.com Sweepstakes page.
+
+
+
 
 Models
 ======
