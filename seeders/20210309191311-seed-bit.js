@@ -33,6 +33,13 @@ module.exports = {
       message: "", 
       createdAt: new Date().toDateString(),
       updatedAt: new Date().toDateString()
+    },
+    {
+      name: 'Zedit101',
+      amount: 10,
+      message: "", 
+      createdAt: new Date().toDateString(),
+      updatedAt: new Date().toDateString()
     }], {});
   },
 

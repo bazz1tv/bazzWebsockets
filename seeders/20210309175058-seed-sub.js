@@ -121,6 +121,18 @@ module.exports = {
       message: "", 
       createdAt: new Date().toDateString(),
       updatedAt: new Date().toDateString()
+    },
+    {
+      name: 'Rhodegal',
+      amount: 1,
+      tier: "1000",
+      gifted: false,
+      sender: '',
+      subExtension: "",
+      month: "",
+      message: "", 
+      createdAt: new Date().toDateString(),
+      updatedAt: new Date().toDateString()
     }], {});
   },
 

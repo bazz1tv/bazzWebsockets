@@ -215,52 +215,68 @@ http.createServer(async function (req, res) {
   {
 
   }
+
   if (query.cmd === "nukem")
   {
-    /*obs.send('SetCurrentScene', {
-        'scene-name': 'Just me (Fade)'
-    })*/
     response = nukem();
   }
   else if (query.cmd === "GetPoolMoney")
   {
     response = (await calcPoolMoney()).toString();
-    //console.log(response);
+  }
+  else if (query.cmd === "GetLockedTier")
+  {
+    poolmoney = await calcPoolMoney();
+    response = GetLockedTierHelper(poolmoney).toFixed(0);
+  }
+  else if (query.cmd === "UnlockTier")
+  {
+    unlockTier();
+    response = "Played UnlockTier stuff ;)";
   }
 
+  console.log(`Handled '${query.cmd}'`);
   res.end(response);
 }).listen(11111);
+
+function GetLockedTierHelper(poolmoney)
+{
+    var i=0;
+    const tier = [25, 50, 100, 200, 500, 1000, 2000];
+    for (; i < tier.length; i++)
+    {
+        if (poolmoney < tier[i])
+        {
+            return (i+1);
+        }
+    }
+
+    return 0;
+}
+
+
 
 const OBSWebSocket = require('obs-websocket-js');
 
 
 const password = require('./pass.js');
 const obs = new OBSWebSocket();
-obs.connect({
+
+function connect_obs(obs)
+{
+    obs.connect({
         address: 'localhost:4444',
         password: password
     })
     .then(() => {
         console.log(`Success! We're connected & authenticated.`);
-
-        //return obs.send('GetMute', {'source': 'confetti'});
     })
-    //.then(data => {
-    //    console.log(`${data.name}: ${data.muted} Available Scenes!`);
-
-        //data.sources.forEach(scene => {
-            //if (scene.name !== data.currentScene) {
-                //console.log(`${scene.name}`);
-
-                /*obs.send('SetCurrentScene', {
-                    'scene-name': scene.name
-                });
-            //}
-        });*/
-    //})
-    .catch(err => { // Promise convention dicates you have a catch on every chain.
+    .catch(err => {
         console.log(err);
     });
+}
+
+connect_obs(obs);
 
 obs.on('SwitchScenes', data => {
     console.log(`New Active Scene: ${data.sceneName}`);
@@ -294,47 +310,54 @@ function nukem()
     return response;
 }
 
+function SetSourceVisibility(scene, source, vis)
+{
+    var retry=false;
+    var retry_times = 0;
+
+    do {
+        retry = false;
+        console.log(`SetSourceVisibility() => scene: '${scene}', source: '${source}', vis: ${vis}`);
+        obs.send('SetSceneItemProperties', {
+            'scene-name': scene,
+            'item': source,
+            'visible': vis
+        })
+        .catch(err => { // Promise convention dicates you have a catch on every chain.
+            console.log(err);
+            if (err.code == 'NOT_CONNECTED')
+            {
+                connect_obs(obs);
+            }
+            retry_times++;
+            retry = true;
+        });
+    } while (retry && retry_times < 2)
+}
+
+function unlockTier(vis)
+{
+    setUnlockTierVisibilities(false);
+    setTimeout(function() { setUnlockTierVisibilities(true) }, 1000);
+    setTimeout(function() { setUnlockTierVisibilities(false) }, 9000);
+}
+
+function setUnlockTierVisibilities(vis)
+{
+    SetSourceVisibility('overlay', 'confetti', vis);
+    SetSourceVisibility('overlay', 'explosion1', vis);
+}
 
 function setNuke(vis)
 {
-    obs.send('SetSceneItemProperties', {
-        'scene-name': 'overlay',
-        'item': 'confetti',
-        'visible': vis
-    })
-    .catch(err => { // Promise convention dicates you have a catch on every chain.
-        console.log(err);
-    });
-
-    obs.send('SetSceneItemProperties', {
-        'scene-name': 'overlay',
-        'item': 'explosion1',
-        'visible': vis
-    })
-    .catch(err => { // Promise convention dicates you have a catch on every chain.
-        console.log(err);
-    });
-
-    obs.send('SetSceneItemProperties', {
-        'scene-name': 'overlay',
-        'item': 'combo breaker',
-        'visible': vis
-    })
-    .catch(err => { // Promise convention dicates you have a catch on every chain.
-        console.log(err);
-    });
+    SetSourceVisibility('overlay', 'confetti', vis);    
+    SetSourceVisibility('overlay', 'explosion1', vis);
+    SetSourceVisibility('overlay', 'combo breaker', vis);
 }
 
 function setEmotes(vis)
 {
-    obs.send('SetSceneItemProperties', {
-        'scene-name': 'overlay',
-        'item': 'emotes',
-        'visible': vis
-    })
-    .catch(err => { // Promise convention dicates you have a catch on every chain.
-        console.log(err);
-    });
+    SetSourceVisibility('overlay', 'emotes', vis);
 }
 
 /* END WEBSERVER SECTION  */

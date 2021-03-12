@@ -11,6 +11,13 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
     */
+    await queryInterface.bulkInsert('Tips', [{
+      name: 'ArielAguayo',
+      amount: 3.33,
+      message: "", 
+      createdAt: new Date().toDateString(),
+      updatedAt: new Date().toDateString()
+    }], {});
   },
 
   down: async (queryInterface, Sequelize) => {

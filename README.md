@@ -18,11 +18,9 @@ TODO
 ====
 
 1) Rework the Overlay
-2) Use and log Realworld events (run in development mode)
 3) Hooking into bazz1.com Sweepstakes page.
 
-
-
+- Make an Event Queue for safer execution of OBS scene / source switching.
 
 Models
 ======
@@ -35,6 +33,10 @@ Models
 
 Scratchpad
 ==========
+
+$env:NODE_ENV="test"
+
+node .\index.js 2>&1 | % ToString | Tee-Object -Append test2.log.txt
 
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 
@@ -74,3 +76,5 @@ tier3_money = ((tier3_subs + tier3_gsubs) * 10.00);
 prize_pool_money = tier1_money + tier2_money + tier3_money + tips + (bits / 100);
 
 delete from sqlite_sequence where name='Subs' OR name="Tips" OR name="Bits";
+
+SELECT name from Subs WHERE gifted=false OR gifted is null UNION SELECT sender from Subs WHERE gifted=true UNION SELECT name from Tips UNION SELECT name from Bits
