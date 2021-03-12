@@ -217,10 +217,12 @@ async function calcEntries(user)
     return entries; //console.log(`${user} has ${entries} entries`);
 }
 
-async function getAllEntrants()
+// Candidates are people who have contributed during the sweepstakes, but they
+// may have 0 entries (eg. they cheered but didn't cheer enough to reach 1 entry)
+async function getAllCandidates()
 {
     /* SELECT name from Subs WHERE gifted=false UNION
-       SELECT sender from Subs WHERE gifted=true UNION
+       SELECT sender as name from Subs WHERE gifted=true UNION
        SELECT name from Tips UNION
        SELECT name from Bits; */
     const names = await db.sequelize.query(
@@ -232,23 +234,51 @@ async function getAllEntrants()
     return names[0];
 }
 
-//calcPoolMoney();
-async function main()
+// this returns an array objects containing name and entries keys, descending sorted by entries.
+async function getAllEntrants()
 {
-	let names = await getAllEntrants();
-	console.log(names);
-	let num = 0;
-	await asyncForEach(names, async (name) => {
-		console.log(`${name.name} has ${await calcEntries(name.name)} entries`);
-		//console.log(num++);
+	let names = await getAllCandidates();
+	//console.log(names);
+	
+	// Calculate entries for each user and remove 0 entry users
+	for (let i = names.length - 1; i >= 0; i -= 1)
+	{
+		let name = names[i];
+		numEntries = await calcEntries(name.name);
+	    if (numEntries == 0) {
+	        names.splice(i, 1);
+	    }
+	    else name.entries = numEntries;
+	}
+	//console.log(names);
+
+	// Sort the list in descending order (highest entries at the top)
+	return names.sort(function (a, b) {
+	  if (a.entries < b.entries) return 1;
+	  if (a.entries > b.entries) return -1;
+	  return 0;
 	});
-	console.log('Done');
 }
 
-async function asyncForEach(array, callback) {
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
-  }
+async function getTopScores(howMany)
+{
+	let scores = await getAllEntrants();
+	//console.log(names);
+
+	//let numEntrants = names.length;
+	//console.log(`There are ${numEntrants} entrants in the sweepstakes`);
+	return scores.slice(0, howMany);
+}
+
+async function getNumEntrants()
+{
+	return (await getAllEntrants()).length;
+}
+
+async function main()
+{
+	console.log(await getTopScores(5));
+	console.log(await getNumEntrants());
 }
 
 main();
