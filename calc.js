@@ -267,6 +267,9 @@ async function getTopScores(howMany)
 
 	//let numEntrants = names.length;
 	//console.log(`There are ${numEntrants} entrants in the sweepstakes`);
+
+	if (howMany == 0)
+		howMany = scores.length;
 	return scores.slice(0, howMany);
 }
 
@@ -277,7 +280,7 @@ async function getNumEntrants()
 
 async function main()
 {
-	console.log(await getTopScores(5));
+	console.log(await getTopScores(0));
 	console.log(await getNumEntrants());
 }
 

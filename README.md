@@ -17,10 +17,13 @@ StreamElements Websocket API
 TODO
 ====
 
-1) Rework the Overlay
+1) ANIMATE THE OVERLAY WHEN AN EVENT OCCURS!!
+2) 25:35:00
 3) Hooking into bazz1.com Sweepstakes page.
 
 - Make an Event Queue for safer execution of OBS scene / source switching.
+
+New Entrants who tie with others, should be at the bottom of the tie.
 
 Models
 ======

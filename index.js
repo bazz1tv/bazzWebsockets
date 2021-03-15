@@ -21,17 +21,18 @@ socket.on('authenticated', onAuthenticated);
 
 socket.on('event', (data) => {
     console.log("==> event");
-    handleEvent(data);
+    handleRealEvent(data);
 });
 socket.on('event:test', (data) => {
     console.log("==> event:test");
     if (process.env.NODE_ENV == "test")
-        handleEvent(data);
+        handleTestEvent(data);
 });
 socket.on('event:update', (data) => {
     console.log("==> event:update");
     console.log(data);
-    // Structure as on https://github.com/StreamElements/widgets/blob/master/CustomCode.md#on-session-update
+
+    handleRealEventUpdate(data);
 });
 socket.on('event:reset', (data) => {
     console.log("==> event:reset");
@@ -39,9 +40,147 @@ socket.on('event:reset', (data) => {
     // Structure as on https://github.com/StreamElements/widgets/blob/master/CustomCode.md#on-session-update
 });
 
-//console.log("3");
+function handleRealEventUpdate(data)
+{
+    // see RealWorldEvents/ for data format
 
-function handleEvent(data)
+    if (data.name == 'subscriber-latest')
+    {
+        //console.log(data);
+        const ev = data.data;
+        var { name, amount, tier, message, sender, gifted } = ev;
+        //var amt = 0; // months subbed or num_giftsubs
+
+        // check if this is NOT a gift sub
+        if ( ( !("gifted" in ev) || ev.gifted == false) &&
+             ( !("bulkGifted" in ev) || ev.bulkGifted == false))
+        {
+            buyer = ev.name;
+            gifted = false;
+            console.log(`${buyer} subbed for ${amount} months`);
+        }
+        else if (("gifted" in ev) && ev.gifted == true) // single gift sub
+        {
+            buyer = ev.sender;
+            // in this case ev.amount = "gift" so do not update the amount variable for the DB,
+            // which is only taking integer.
+            amount = 1;
+            gifted = true;
+            console.log(`${buyer} gifted a sub to ${ev.name}`);
+        }
+
+        //console.log(`the buyer is ${buyer}`);
+
+        /* Create a database entry for the buyer or update their entry to state
+        they subbed */
+        
+        let subExtension = false; // we're not using this table entry anymore. Default to false
+
+        db.Sub.create({ name, amount, tier, gifted, sender, subExtension, message })
+        .catch((err) => {
+            console.log('***There was an error creating a Sub db entry', JSON.stringify(contact))
+            return res.status(400).send(err)
+        });
+    }
+    else if (data.name == 'cheer-latest')
+    {
+        var {name, amount, message} = data.data;
+        
+        console.log(`${name} cheered ${amount} bits`);
+
+        /* Create a database entry for the buyer or update their bits */
+        db.Bit.create({ name, amount, message })
+        .catch((err) => {
+            console.log('***There was an error creating a Bit db entry', JSON.stringify(contact))
+            return res.status(400).send(err)
+        });
+    }
+    else if (data.name == 'tip-latest')
+    {
+        //console.log(data);
+        var { name, amount, message } = data.data;
+        /* Unfortunately from test emulation alone, there is no way to
+        get the currency. So for now I'll be ignoring the currency */
+        console.log(`${name} tipped $${amount.toFixed(2)}`);
+
+        /* Create a database entry for the buyer or update their tip */
+        db.Tip.create({ name, amount, message })
+        .catch((err) => {
+            console.log('***There was an error creating a Tip db entry', JSON.stringify(contact))
+            return res.status(400).send(err)
+        });
+    }
+}
+
+function handleRealEvent(data)
+{
+    console.log(data);
+    if (data.listener == 'subscriber-latest')
+    {
+        //console.log(data);
+        var ev = data.event;
+        var buyer = "";
+        var amount = 0;
+        var gifted = false;
+        //var amt = 0; // months subbed or num_giftsubs
+
+        // check if this is NOT a gift sub
+        if ( ( !("gifted" in ev) || ev.gifted == false) &&
+             ( !("bulkGifted" in ev) || ev.bulkGifted == false))
+        {
+            buyer = ev.name;
+            amount = ev.amount;
+            gifted = false;
+            console.log(`${buyer} subbed for ${amount} months`);
+        }
+        else if (("gifted" in ev) && ev.gifted == true) // single gift sub
+        {
+            buyer = ev.sender;
+            // in this case ev.amount = "gift" so do not update the amount variable for the DB,
+            // which is only taking integer.
+            amount = 1;
+            gifted = true;
+            console.log(`${buyer} gifted a sub to ${ev.name}`);
+        }
+        else if (("bulkGifted" in ev) && ev.bulkGifted == true) // Community gift sub
+        {
+            buyer = ev.sender;
+            amount = ev.amount;
+            gifted = true;
+            console.log(`${buyer} gifted ${ev.amount} gift subs`);
+        }
+
+        //console.log(`the buyer is ${buyer}`);
+
+        /* Create a database entry for the buyer or update their entry to state
+        they subbed */
+        var { name, tier, sender, subExtension, month, message } = ev;
+        db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
+        .catch((err) => {
+            console.log('***There was an error creating a Sub db entry', JSON.stringify(contact))
+            return res.status(400).send(err)
+        });
+    }
+    else if (data.listener == 'tip-latest')
+    {
+        //console.log(data);
+        var ev = data.event;
+        var amount = ev.amount.toFixed(2);
+        /* Unfortunately from test emulation alone, there is no way to
+        get the currency. So for now I'll be ignoring the currency */
+        console.log(`${ev.name} tipped $${amount}`);
+
+        /* Create a database entry for the buyer or update their tip */
+        var { name, message } = ev;
+        db.Tip.create({ name, amount, message })
+        .catch((err) => {
+            console.log('***There was an error creating a Tip db entry', JSON.stringify(contact))
+            return res.status(400).send(err)
+        });
+    }
+}
+
+function handleTestEvent(data)
 {
     console.log(data);
     if (data.listener == 'subscriber-latest')
@@ -122,44 +261,6 @@ function handleEvent(data)
             return res.status(400).send(err)
         });
     }
-/*
-
-==> event:test
-{
-  listener: 'subscriber-latest',
-  event: {
-    type: 'subscriber',
-    name: 'Rene',
-    amount: 1,
-    count: 7,
-    isTest: true,
-    tier: 'prime',
-    gifted: false,
-    bulkGifted: false,
-    sender: 'Collete',
-    items: [ [Object], [Object], [Object], [Object], [Object] ],
-    subExtension: false,
-    month: 'September',
-    message: 'Howdy, my name is Bill'
-  }
-}
-
-==> event:test
-{
-  listener: 'subscriber-latest',
-  event: {
-    type: 'subscriber',
-    name: 'Kiah',
-    amount: 1,
-    count: 1,
-    items: [ [Object], [Object], [Object], [Object], [Object] ],
-    tier: '1000',
-    month: 'March',
-    isTest: true,
-    message: 'Do not fear a man that spams 1000 memes, instead fear a man that spams a meme 1000 times'
-  }
-}
-*/
 }
 
 function onConnect() {
@@ -279,7 +380,7 @@ function connect_obs(obs)
 connect_obs(obs);
 
 obs.on('SwitchScenes', data => {
-    console.log(`New Active Scene: ${data.sceneName}`);
+    //console.log(`New Active Scene: ${data.sceneName}`);
 });
 
 // You must add this handler to avoid uncaught exceptions.
@@ -367,7 +468,7 @@ function setEmotes(vis)
 /* CALC SECTION
 ////////////////////////////////////////////////*/
 //const db = require('./models'); // new require for db object
-const DEBUG=true;
+const DEBUG=false;
 
 async function calcPoolMoney()
 {
