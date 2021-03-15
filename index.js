@@ -296,6 +296,7 @@ function onAuthenticated(data) {
 
 var http = require('http');
 var url = require('url');
+var exCounter = 0;
 
 var Wait = 0;
 http.createServer(async function (req, res) {
@@ -334,6 +335,28 @@ http.createServer(async function (req, res) {
   {
     unlockTier();
     response = "Played UnlockTier stuff ;)";
+  }
+  else if (query.cmd === "ExerciseStart")
+  {
+    exCounter = 0;
+    SetTextGDIPlusText("Exercise Counter", exCounter.toString())
+    SetSourceVisibility("overlay", "Exercise Counter", true)
+    response = "Set Exercise Counter to " + exCounter
+  }
+  else if (query.cmd === "ExerciseInc")
+  {
+    SetTextGDIPlusText("Exercise Counter", (++exCounter).toString())
+    response = "Set Exercise Counter to " + exCounter
+  }
+  else if (query.cmd === "ExerciseEnd")
+  {
+    exCounter = 0;
+    SetSourceVisibility("overlay", "Exercise Counter", false)
+    SetTextGDIPlusText("Exercise Counter", exCounter.toString())
+    setConfettiExplosion(false)
+    setTimeout(function() { setConfettiExplosion(true) }, 100);
+    setTimeout(function() { setConfettiExplosion(false) }, 8000);
+    response = "Ended Exercise Timer " + exCounter
   }
 
   console.log(`Handled '${query.cmd}'`);
@@ -413,8 +436,8 @@ function nukem()
 
 function SetSourceVisibility(scene, source, vis)
 {
-    var retry=false;
-    var retry_times = 0;
+    let retry;
+    let retry_times = 2;
 
     do {
         retry = false;
@@ -433,8 +456,34 @@ function SetSourceVisibility(scene, source, vis)
             retry_times++;
             retry = true;
         });
-    } while (retry && retry_times < 2)
+    } while (retry && retry_times >= 0)
 }
+
+function SetTextGDIPlusText(source, text)
+{
+    let retry;
+    let retry_times = 2;
+
+    do {
+        retry = false;
+        console.log('SetTextGDIPlusProperties() => source: ' +
+                    `'${source}', text: ${text}`);
+        obs.send('SetTextGDIPlusProperties', {
+            'source': source,
+            'text': text
+        })
+        .catch(err => { // Promise convention dicates you have a catch on every chain.
+            console.log(err);
+            if (err.code == 'NOT_CONNECTED')
+            {
+                connect_obs(obs);
+            }
+            retry_times--;
+            retry = true;
+        });
+    } while (retry && retry_times >= 0)
+}
+
 
 function unlockTier(vis)
 {
@@ -449,10 +498,20 @@ function setUnlockTierVisibilities(vis)
     SetSourceVisibility('overlay', 'explosion1', vis);
 }
 
-function setNuke(vis)
+function setConfettiExplosion(vis)
 {
     SetSourceVisibility('overlay', 'confetti', vis);    
     SetSourceVisibility('overlay', 'explosion1', vis);
+}
+
+function setNuke(vis)
+{
+    setConfettiExplosion(vis)
+    setComboBreaker(vis)
+}
+
+function setComboBreaker(vis)
+{
     SetSourceVisibility('overlay', 'combo breaker', vis);
 }
 

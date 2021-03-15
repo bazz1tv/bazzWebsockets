@@ -20,6 +20,7 @@ TODO
 1) ANIMATE THE OVERLAY WHEN AN EVENT OCCURS!!
 2) 25:35:00
 3) Hooking into bazz1.com Sweepstakes page.
+4) Web server responses instantly, fires other functions from a setTimeout()
 
 - Make an Event Queue for safer execution of OBS scene / source switching.
 
