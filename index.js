@@ -294,13 +294,15 @@ function onAuthenticated(data) {
 /* WEBSERVER SECTION  */
 /////////////////////////////////////////////
 
+
+var fs = require('fs'); // to serve static files
 var http = require('http');
 var url = require('url');
 var exCounter = 0;
 
 var Wait = 0;
+var response = "";
 http.createServer(async function (req, res) {
-  var response = "";
   res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Request-Method', '*');
     res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
@@ -313,12 +315,19 @@ http.createServer(async function (req, res) {
     else res.writeHead(200, {'Content-Type': 'text/html'});
   const {pathname, query, href} = url.parse(req.url, true);
   console.log(`web server request: ${href}`);
-  if (pathname == "/bazz/auth" || pathname == "/bazz/auth/")
+  if (pathname == "/bazz/ExerciseRemote")
   {
-
+    let file = __dirname + '/public_html/' + "exerciseRemote.html";
+    console.log(`file = '${file}'`)
+    try {
+      response = fs.readFileSync(file, 'utf8')
+      //console.log(data)
+    } catch (err) {
+      console.error(err)
+      response = JSON.stringify(err);
+    }
   }
-
-  if (query.cmd === "nukem")
+  else if (query.cmd === "nukem")
   {
     response = nukem();
   }
@@ -359,7 +368,9 @@ http.createServer(async function (req, res) {
     response = "Ended Exercise Timer " + exCounter
   }
 
-  console.log(`Handled '${query.cmd}'`);
+  console.log(`Handled '${pathname}', '${query.cmd}'`);
+
+  console.log(`response = '${response}'`);
   res.end(response);
 }).listen(11111);
 
