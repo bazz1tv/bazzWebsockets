@@ -1,0 +1,28 @@
+==> event
+{
+  _id: '604c4e3ef228d603341260a0',
+  channel: '5f77ae391e59dae557adeb4f',
+  type: 'cheer',
+  provider: 'twitch',
+  flagged: false,
+  data: {
+    username: 'esoteric_pumpkin',
+    providerId: '519000770',
+    displayName: 'esoteric_pumpkin',
+    amount: 200,
+    message: 'Cheer200 Here you go :)',
+    quantity: 0,
+    avatar: 'https://cdn.streamelements.com/static/default-avatar.png'
+  },
+  createdAt: '2021-03-13T05:31:42.653Z',
+  updatedAt: '2021-03-13T05:31:42.653Z'
+}
+==> event:update
+{
+  name: 'cheer-latest',
+  data: {
+    name: 'esoteric_pumpkin',
+    amount: 200,
+    message: 'Cheer200 Here you go :)'
+  }
+}

@@ -1,0 +1,46 @@
+==> event
+{
+  _id: '604d6ce8f228d6794b169002',
+  channel: '5f77ae391e59dae557adeb4f',
+  type: 'subscriber',
+  provider: 'twitch',
+  flagged: false,
+  data: {
+    username: 'linkdefi',
+    providerId: '487805940',
+    displayName: 'linkdefi',
+    amount: 4,
+    streak: 3,
+    tier: '1000',
+    message: 'hell yee',
+    quantity: 0,
+    avatar: 'https://cdn.streamelements.com/static/default-avatar.png'
+  },
+  createdAt: '2021-03-14T01:54:48.432Z',
+  updatedAt: '2021-03-14T01:54:48.432Z'
+}
+New Active Scene: Webcam1 (Fade)
+==> event:update
+{ name: 'subscriber-goal', data: { amount: 119 } }
+==> event:update
+{
+  name: 'subscriber-latest',
+  data: { name: 'linkdefi', amount: 4, tier: '1000', message: 'hell yee' }
+}
+==> event:update
+{ name: 'subscriber-session', data: { count: 2 } }
+==> event:update
+{ name: 'subscriber-week', data: { count: 2 } }
+==> event:update
+{ name: 'subscriber-month', data: { count: 12 } }
+==> event:update
+{ name: 'subscriber-total', data: { count: 39 } }
+==> event:update
+{ name: 'subscriber-points', data: { amount: 39 } }
+==> event:update
+{ name: 'subscriber-resub-session', data: { count: 2 } }
+==> event:update
+{
+  name: 'subscriber-resub-latest',
+  data: { name: 'linkdefi', amount: 4, message: 'hell yee' }
+}
