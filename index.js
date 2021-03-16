@@ -350,12 +350,12 @@ http.createServer(async function (req, res) {
     exCounter = 0;
     SetTextGDIPlusText("Exercise Counter", exCounter.toString())
     SetSourceVisibility("overlay", "Exercise Counter", true)
-    response = "Set Exercise Counter to " + exCounter
+    response = exCounter.toString(); // "Set Exercise Counter to " + exCounter
   }
   else if (query.cmd === "ExerciseInc")
   {
     SetTextGDIPlusText("Exercise Counter", (++exCounter).toString())
-    response = "Set Exercise Counter to " + exCounter
+    response = exCounter.toString(); //"Set Exercise Counter to " + exCounter
   }
   else if (query.cmd === "ExerciseEnd")
   {
@@ -365,7 +365,7 @@ http.createServer(async function (req, res) {
     setConfettiExplosion(false)
     setTimeout(function() { setConfettiExplosion(true) }, 100);
     setTimeout(function() { setConfettiExplosion(false) }, 8000);
-    response = "Ended Exercise Timer " + exCounter
+    response = ''; //"Ended Exercise Timer " + exCounter
   }
 
   console.log(`Handled '${pathname}', '${query.cmd}'`);
