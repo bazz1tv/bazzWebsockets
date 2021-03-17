@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "node-osc": "^5.2.2",
     "obs-websocket-js": "^4.0.2",
     "sequelize": "^6.5.0",
     "sequelize-cli": "^6.2.0",

@@ -284,6 +284,34 @@ function onAuthenticated(data) {
     console.log(`Successfully connected to channel ${channelId}`);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+/* OSC !! LED Guitar :O */
+const OSC_HOST = '127.0.0.1'
+const OSC_PORT = 7000
+
+const { Client: OSCClient, Message: OSCMessage } = require('node-osc');
+
+const oscClient = new OSCClient(OSC_HOST, OSC_PORT);
+var oscCurrentLayer = 0, oscCurrentClip = 0
+
+function oscLayerClipConnect(layer, clip)
+{
+  oscCurrentLayer = layer, oscCurrentClip = clip
+  const oscMessage = new OSCMessage(
+    '/composition/layers/' + layer + '/clips/' + clip + '/connect', 1);
+
+  oscClient.send(oscMessage, (err) => {
+    if (err) {
+      console.error(new Error(err));
+    }
+    //oscClient.close();
+  });
+
+  console.log(`layer: '${oscCurrentLayer}', clip: '${oscCurrentClip}'`)
+}
+/////////////////////////////////////////////////////////////////////////////////
+
+
 
 
 //////////////////////////////////////////////////
@@ -345,6 +373,7 @@ http.createServer(async function (req, res) {
     unlockTier();
     response = "Played UnlockTier stuff ;)";
   }
+///////////////// EXERCISE REMOTE!!
   else if (query.cmd === "ExerciseStart")
   {
     exCounter = 0;
@@ -367,6 +396,84 @@ http.createServer(async function (req, res) {
     setTimeout(function() { setConfettiExplosion(false) }, 8000);
     response = ''; //"Ended Exercise Timer " + exCounter
   }
+/////////////////////////////////////////////////////////
+// LED GUITAR STUFFS
+  else if (query.cmd === "glava")
+  {
+    oscLayerClipConnect(2, 9)
+    response = "Set Guitar to LAVA MODE!!"
+  }
+  else if (query.cmd === "glines")
+  {
+    oscLayerClipConnect(2, 5)
+    response = "Set Guitar to LINES MODE!!"
+  }
+  else if (query.cmd === "gsparkles")
+  {
+    oscLayerClipConnect(2, 4)
+    response = "Set Guitar to SPARKLES MODE!!"
+  }
+  else if (query.cmd === "gstrobe")
+  {
+    oscLayerClipConnect(2, 11)
+    response = "Set Guitar to STROBE MODE!!"
+  }
+  else if (query.cmd === "gpulse")
+  {
+    oscLayerClipConnect(2, 12)
+    response = "Set Guitar to PULSE MODE!!"
+  }
+  else if (query.cmd === "gcam1")
+  {
+    oscLayerClipConnect(2, 13)
+    response = "Set Guitar to CAM1 MODE!!"
+  }
+  else if (query.cmd === "gpastel")
+  {
+    oscLayerClipConnect(2, 14)
+    response = "Set Guitar to PASTEL MODE!!"
+  }
+  else if (query.cmd === "gcolor")
+  {
+    /* DEPENDENCY: in Resolume
+     * Link the clip's RGB fields to the Dashboard knobs 1-3 */
+    let base = '/composition/layers/' + oscCurrentLayer
+    base += '/clips/' + oscCurrentClip + '/dashboard/link'
+
+    const r = parseFloat(query.r),
+          g = parseFloat(query.g),
+          b = parseFloat(query.b)
+
+    {
+      const oscMessage = new OSCMessage(base + '1', r);
+      oscClient.send(oscMessage, (err) => {
+        if (err) {
+          console.error(new Error(err));
+        }
+      });
+    }
+
+    {
+      const oscMessage = new OSCMessage(base + '2', g);
+      oscClient.send(oscMessage, (err) => {
+        if (err) {
+          console.error(new Error(err));
+        }
+      });
+    }
+
+    {
+      const oscMessage = new OSCMessage(base + '3', b);
+      oscClient.send(oscMessage, (err) => {
+        if (err) {
+          console.error(new Error(err));
+        }
+      });
+    }
+
+    response = `Set layer: '${oscCurrentLayer}', clip: '${oscCurrentClip}' to RGB(${r}, ${g}, ${b})`
+  }
+
 
   console.log(`Handled '${pathname}', '${query.cmd}'`);
 
