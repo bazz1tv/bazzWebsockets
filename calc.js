@@ -3,7 +3,6 @@ const DEBUG=false;
 
 /* CALC SECTION
 ////////////////////////////////////////////////*/
-//const db = require('./models'); // new require for db object
 
 async function calcPoolMoney()
 {
@@ -280,8 +279,20 @@ async function getNumEntrants()
 
 async function main()
 {
-	console.log(await getTopScores(0));
-	console.log(await getNumEntrants());
+    var myArgs = process.argv.slice(2);
+    console.log('myArgs: ', myArgs);
+
+    if (myArgs[0] == 'createTransfer')
+    {
+        // assume sanitized
+        let from = myArgs[1];
+        let to = myArgs[2];
+        let amount = parseInt(myArgs[3]);
+
+        const transfer = await db.Transfer.create({ from: from, to: to, amount: amount });
+    }
+	//console.log(await getTopScores(0));
+	//console.log(await getNumEntrants());
 }
 
 main();

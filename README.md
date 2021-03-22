@@ -35,6 +35,10 @@ Models
 
  .\node_modules\.bin\sequelize model:generate --name Bit --attributes name:string,amount:integer,message:text
 
+ .\node_modules\.bin\sequelize model:generate --name Transfer --attributes from:string,to:string,message:text
+
+ shirtless man kills it on piano for 20 minutes solid
+
 Scratchpad
 ==========
 
