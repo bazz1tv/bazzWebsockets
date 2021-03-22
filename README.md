@@ -82,3 +82,5 @@ prize_pool_money = tier1_money + tier2_money + tier3_money + tips + (bits / 100)
 delete from sqlite_sequence where name='Subs' OR name="Tips" OR name="Bits";
 
 SELECT name from Subs WHERE gifted=false OR gifted is null UNION SELECT sender from Subs WHERE gifted=true UNION SELECT name from Tips UNION SELECT name from Bits
+
+UPDATE Bits SET name='Goth_Queen_Clique' WHERE id=28

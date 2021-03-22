@@ -49,7 +49,10 @@ function handleRealEventUpdate(data)
         //console.log(data);
         const ev = data.data;
         var { name, amount, tier, message, sender, gifted } = ev;
-        //var amt = 0; // months subbed or num_giftsubs
+
+        name = name.toLowerCase();
+        sender = sender.toLowerCase();
+        gifted = gifted.toLowerCase();
 
         // check if this is NOT a gift sub
         if ( ( !("gifted" in ev) || ev.gifted == false) &&
@@ -85,6 +88,8 @@ function handleRealEventUpdate(data)
     else if (data.name == 'cheer-latest')
     {
         var {name, amount, message} = data.data;
+
+        name = name.toLowerCase();
         
         console.log(`${name} cheered ${amount} bits`);
 
@@ -99,6 +104,7 @@ function handleRealEventUpdate(data)
     {
         //console.log(data);
         var { name, amount, message } = data.data;
+        name = name.toLowerCase();
         /* Unfortunately from test emulation alone, there is no way to
         get the currency. So for now I'll be ignoring the currency */
         console.log(`${name} tipped $${amount.toFixed(2)}`);
@@ -117,49 +123,53 @@ function handleRealEvent(data)
     console.log(data);
     if (data.listener == 'subscriber-latest')
     {
-        //console.log(data);
-        var ev = data.event;
-        var buyer = "";
-        var amount = 0;
-        var gifted = false;
-        //var amt = 0; // months subbed or num_giftsubs
+      //console.log(data);
+      var ev = data.event;
+      var buyer = "";
+      var amount = 0;
+      var gifted = false;
+      //var amt = 0; // months subbed or num_giftsubs
 
-        // check if this is NOT a gift sub
-        if ( ( !("gifted" in ev) || ev.gifted == false) &&
-             ( !("bulkGifted" in ev) || ev.bulkGifted == false))
-        {
-            buyer = ev.name;
-            amount = ev.amount;
-            gifted = false;
-            console.log(`${buyer} subbed for ${amount} months`);
-        }
-        else if (("gifted" in ev) && ev.gifted == true) // single gift sub
-        {
-            buyer = ev.sender;
-            // in this case ev.amount = "gift" so do not update the amount variable for the DB,
-            // which is only taking integer.
-            amount = 1;
-            gifted = true;
-            console.log(`${buyer} gifted a sub to ${ev.name}`);
-        }
-        else if (("bulkGifted" in ev) && ev.bulkGifted == true) // Community gift sub
-        {
-            buyer = ev.sender;
-            amount = ev.amount;
-            gifted = true;
-            console.log(`${buyer} gifted ${ev.amount} gift subs`);
-        }
+      // check if this is NOT a gift sub
+      if ( ( !("gifted" in ev) || ev.gifted == false) &&
+           ( !("bulkGifted" in ev) || ev.bulkGifted == false))
+      {
+          buyer = ev.name;
+          amount = ev.amount;
+          gifted = false;
+          console.log(`${buyer} subbed for ${amount} months`);
+      }
+      else if (("gifted" in ev) && ev.gifted == true) // single gift sub
+      {
+          buyer = ev.sender;
+          // in this case ev.amount = "gift" so do not update the amount variable for the DB,
+          // which is only taking integer.
+          amount = 1;
+          gifted = true;
+          console.log(`${buyer} gifted a sub to ${ev.name}`);
+      }
+      else if (("bulkGifted" in ev) && ev.bulkGifted == true) // Community gift sub
+      {
+          buyer = ev.sender;
+          amount = ev.amount;
+          gifted = true;
+          console.log(`${buyer} gifted ${ev.amount} gift subs`);
+      }
 
-        //console.log(`the buyer is ${buyer}`);
+      //console.log(`the buyer is ${buyer}`);
 
-        /* Create a database entry for the buyer or update their entry to state
-        they subbed */
-        var { name, tier, sender, subExtension, month, message } = ev;
-        db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
-        .catch((err) => {
-            console.log('***There was an error creating a Sub db entry', JSON.stringify(contact))
-            return res.status(400).send(err)
-        });
+      /* Create a database entry for the buyer or update their entry to state
+      they subbed */
+      var { name, tier, sender, subExtension, month, message } = ev;
+      name = name.toLowerCase();
+      sender = sender.toLowerCase();
+      gifted = gifted.toLowerCase();
+
+      db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
+      .catch((err) => {
+          console.log('***There was an error creating a Sub db entry', JSON.stringify(contact))
+          return res.status(400).send(err)
+      });
     }
     else if (data.listener == 'tip-latest')
     {
@@ -168,10 +178,12 @@ function handleRealEvent(data)
         var amount = ev.amount.toFixed(2);
         /* Unfortunately from test emulation alone, there is no way to
         get the currency. So for now I'll be ignoring the currency */
-        console.log(`${ev.name} tipped $${amount}`);
 
         /* Create a database entry for the buyer or update their tip */
         var { name, message } = ev;
+
+        name = name.toLowerCase();
+        console.log(`${name} tipped $${amount}`);
         db.Tip.create({ name, amount, message })
         .catch((err) => {
             console.log('***There was an error creating a Tip db entry', JSON.stringify(contact))
@@ -223,6 +235,10 @@ function handleTestEvent(data)
         /* Create a database entry for the buyer or update their entry to state
         they subbed */
         var { name, tier, sender, subExtension, month, message } = ev;
+        name = name.toLowerCase();
+        sender = sender.toLowerCase();
+        gifted = gifted.toLowerCase();
+
         db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
         .catch((err) => {
             console.log('***There was an error creating a Sub db entry', JSON.stringify(contact))
@@ -240,6 +256,8 @@ function handleTestEvent(data)
 
         /* Create a database entry for the buyer or update their tip */
         var { name, message } = ev;
+        name = name.toLowerCase();
+
         db.Tip.create({ name, amount, message })
         .catch((err) => {
             console.log('***There was an error creating a Tip db entry', JSON.stringify(contact))
@@ -251,6 +269,7 @@ function handleTestEvent(data)
         //console.log(data);
         var ev = data.event;
         var {name, amount, message} = ev;
+        name = name.toLowerCase();
         
         console.log(`${name} cheered ${amount} bits`);
 

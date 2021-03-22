@@ -112,7 +112,7 @@ module.exports = {
       updatedAt: new Date().toDateString()
     }, {
       name: 'Zedit101',
-      amount: 1,
+      amount: 3,
       tier: "1000",
       gifted: false,
       sender: '',
@@ -124,7 +124,7 @@ module.exports = {
     },
     {
       name: 'Rhodegal',
-      amount: 1,
+      amount: 3,
       tier: "1000",
       gifted: false,
       sender: '',
