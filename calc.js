@@ -233,6 +233,11 @@ async function getAllCandidates()
     return names[0];
 }
 
+function sortHelper (a, b) {
+  if (a.entries < b.entries) return 1;
+  if (a.entries > b.entries) return -1;
+  return 0;
+}
 // this returns an array objects containing name and entries keys, descending sorted by entries.
 async function getAllEntrants()
 {
@@ -252,11 +257,66 @@ async function getAllEntrants()
 	//console.log(names);
 
 	// Sort the list in descending order (highest entries at the top)
-	return names.sort(function (a, b) {
-	  if (a.entries < b.entries) return 1;
-	  if (a.entries > b.entries) return -1;
-	  return 0;
-	});
+	names = names.sort( sortHelper );
+
+    console.log("ENTRANTS Before Transfers");
+    console.log(names)
+
+    //iterate through the FROM of all the transfers
+    const transfers = await db.Transfer.findAll();
+    /*
+        [
+            {from: from, to: to, amount: amount},
+            ...
+        ]
+    */
+    // check for that name in `names` js var
+
+    console.log("Finding the FROM entrants of transfers")
+    for (let i = 0; i < transfers.length; i+=1)
+    {
+        // Assert that the FROM exists in `names`
+        let transfer = transfers[i];
+        let amount = parseInt(transfer.amount)
+        let fromEntrant = await findEntrant(names, transfer.from);
+        console.log(fromEntrant);
+
+        // Check if the TO exists in `names`
+        let toEntrant = await findEntrant(names, transfer.to);
+        if (toEntrant != null)
+        {
+            // Yes: Adjust the tickets of TO
+            console.log("\tTO Entrant found: ", toEntrant)
+            toEntrant.entries += amount;
+            console.log("\tincreasing by " + amount + " entries")
+        }
+        else
+        {
+            let obj = { name: transfer.to, entries: amount }
+            console.log("\tAdding new entrant: ", obj)
+            // No: Add a new entry into `names` with TO and AMOUNT
+            names.push( obj );
+        }
+
+        // Adjust the FROM entrant's ticket amount
+        fromEntrant.entries -= amount;
+    }
+
+    return names.sort( sortHelper );
+}
+
+async function findEntrant(names, name)
+{
+    for (let i = 0; i < names.length; i+=1)
+    {
+        let n = names[i];
+        if (n.name == name)
+        {
+            return n;
+        }
+    }
+
+    return null;
 }
 
 async function getTopScores(howMany)
@@ -291,8 +351,15 @@ async function main()
 
         const transfer = await db.Transfer.create({ from: from, to: to, amount: amount });
     }
-	//console.log(await getTopScores(0));
-	//console.log(await getNumEntrants());
+    else if (myArgs[0] == 'getTopScores')
+    {
+        let amount = (myArgs.length == 2) ? parseInt(myArgs[1]) : 0;
+        console.log(await getTopScores(amount));
+    }
+    else if (myArgs[0] == 'getNumEntrants')
+    {
+        console.log(await getNumEntrants());
+    }
 }
 
 main();
