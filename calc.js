@@ -149,27 +149,34 @@ async function calcEntries(user)
     // SELECT SUM(amount) FROM Subs WHERE tier="1000" AND gifted=1;
     // Note: The below sum() functions return NaN if there are no values to sum,
     //   so I cast to 0 if NaN with (|| 0)
-    const tier1_gsubs = await db.Sub.sum('amount',{
+    let tier1_gsubs = await db.Sub.findAll({
       where: {
         tier: "1000",
         gifted: 1,
         sender: user
       }
     }) || 0;
-    const tier2_gsubs = await db.Sub.sum('amount',{
+    let tier2_gsubs = await db.Sub.findAll({
       where: {
         tier: "2000",
         gifted: 1,
         sender: user
       }
     }) || 0;
-    const tier3_gsubs = await db.Sub.sum('amount',{
+    let tier3_gsubs = await db.Sub.findAll({
       where: {
         tier: "3000",
         gifted: 1,
         sender: user
       }
     }) || 0;
+
+    if (tier1_gsubs !== 0)
+        tier1_gsubs = tier1_gsubs.length;
+    if (tier2_gsubs !== 0)
+        tier2_gsubs = tier2_gsubs.length;
+    if (tier3_gsubs !== 0)
+        tier3_gsubs = tier3_gsubs.length;
 
     const tier1_gsubs_entries = (tier1_gsubs * 1),
           tier2_gsubs_entries = (tier2_gsubs * 2),
@@ -214,6 +221,14 @@ async function calcEntries(user)
 
 
     return entries; //console.log(`${user} has ${entries} entries`);
+}
+
+async function getAllSubs()
+{
+    const names = await db.sequelize.query(
+       "SELECT name from Subs WHERE gifted=false OR gifted is null", { type: db.Sequelize.SELECT });
+    //console.log(names);
+    return names[0];
 }
 
 // Candidates are people who have contributed during the sweepstakes, but they
@@ -319,6 +334,23 @@ async function findEntrant(names, name)
     return null;
 }
 
+async function findSub(name)
+{
+    let names = await getAllSubs();
+    //console.log(names)
+    for (let i = 0; i < names.length; i+=1)
+    {
+        let obj = names[i];
+        //console.log(`obj.name = '${obj.name}', name = '${name}'`)
+        if (obj.name === name)
+        {
+            return true;
+        }
+    }
+    //console.log("returning false")
+    return false;
+}
+
 async function getTopScores(howMany)
 {
 	let scores = await getAllEntrants();
@@ -359,6 +391,49 @@ async function main()
     else if (myArgs[0] == 'getNumEntrants')
     {
         console.log(await getNumEntrants());
+    }
+    else if (myArgs[0] == 'insertSub')
+    {
+        if (myArgs.length != 4)
+        {
+            console.log ("Usage: insertSub [name] [totalMonths] [tier]");
+            return;
+        }
+
+        // TODO: Make sure `name` isn't already in the Subs Table
+        // INSERT INTO Subs (id,name,amount,tier,createdAt,updatedAt) VALUES(76,'mrgaleer',4,'1000','2021-03-22 17:36:43.899 +00:00','2021-03-22 17:36:43.899 +00:00');
+        let name = myArgs[1];
+        let tier = myArgs[2]; // eg. '1000'
+        let amount = parseInt(myArgs[3]);
+
+        const sub = await db.Sub.create({ name: name, amount: amount, tier: tier });
+    }
+    else if (myArgs[0] == 'findSub')
+    {
+        let name = myArgs[1]
+        if ( (await findSub(name)) === false )
+        {
+            console.log (`'${name}' sub does not exist`);
+        }
+        else
+        {
+            console.log (`'${name}' sub exists`);
+        }
+    }
+    else if (myArgs[0] == 'insertBit')
+    {
+        if (myArgs.length != 3)
+        {
+            console.log ("Usage: insertBit [name] [bits]");
+            return;
+        }
+
+        // TODO: Make sure `name` isn't already in the Subs Table
+        //  INSERT INTO Subs (id,name,amount,tier,createdAt,updatedAt) VALUES(76,'mrgaleer',4,'1000','2021-03-22 17:36:43.899 +00:00','2021-03-22 17:36:43.899 +00:00');
+        let name = myArgs[1];
+        let amount = parseInt(myArgs[2]);
+
+        const bit = await db.Bit.create({ name: name, amount: amount });
     }
 }
 

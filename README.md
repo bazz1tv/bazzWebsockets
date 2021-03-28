@@ -42,7 +42,7 @@ Models
 Scratchpad
 ==========
 
-$env:NODE_ENV="test"
+$env:NODE_ENV="development"
 
 node .\index.js 2>&1 | % ToString | Tee-Object -Append test2.log.txt
 

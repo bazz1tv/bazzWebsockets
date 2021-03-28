@@ -50,9 +50,13 @@ function handleRealEventUpdate(data)
         const ev = data.data;
         var { name, amount, tier, message, sender, gifted } = ev;
 
-        name = name.toLowerCase();
-        sender = sender.toLowerCase();
-        gifted = gifted.toLowerCase();
+        // force to lowercase
+        if (name !== undefined)
+          name = name.toString().toLowerCase();
+        if (sender !== undefined)
+          sender = sender.toString().toLowerCase();
+        if (gifted !== undefined)
+          gifted = gifted.toString().toLowerCase();
 
         // check if this is NOT a gift sub
         if ( ( !("gifted" in ev) || ev.gifted == false) &&
@@ -89,7 +93,7 @@ function handleRealEventUpdate(data)
     {
         var {name, amount, message} = data.data;
 
-        name = name.toLowerCase();
+        name = name.toString().toLowerCase();
         
         console.log(`${name} cheered ${amount} bits`);
 
@@ -104,7 +108,7 @@ function handleRealEventUpdate(data)
     {
         //console.log(data);
         var { name, amount, message } = data.data;
-        name = name.toLowerCase();
+        name = name.toString().toLowerCase();
         /* Unfortunately from test emulation alone, there is no way to
         get the currency. So for now I'll be ignoring the currency */
         console.log(`${name} tipped $${amount.toFixed(2)}`);
@@ -161,9 +165,13 @@ function handleRealEvent(data)
       /* Create a database entry for the buyer or update their entry to state
       they subbed */
       var { name, tier, sender, subExtension, month, message } = ev;
-      name = name.toLowerCase();
-      sender = sender.toLowerCase();
-      gifted = gifted.toLowerCase();
+      // force to lowercase
+      if (name !== undefined)
+        name = name.toString().toLowerCase();
+      if (sender !== undefined)
+        sender = sender.toString().toLowerCase();
+      if (gifted !== undefined)
+        gifted = gifted.toString().toLowerCase();
 
       db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
       .catch((err) => {
@@ -182,7 +190,7 @@ function handleRealEvent(data)
         /* Create a database entry for the buyer or update their tip */
         var { name, message } = ev;
 
-        name = name.toLowerCase();
+        name = name.toString().toLowerCase();
         console.log(`${name} tipped $${amount}`);
         db.Tip.create({ name, amount, message })
         .catch((err) => {
@@ -235,9 +243,13 @@ function handleTestEvent(data)
         /* Create a database entry for the buyer or update their entry to state
         they subbed */
         var { name, tier, sender, subExtension, month, message } = ev;
-        name = name.toLowerCase();
-        sender = sender.toLowerCase();
-        gifted = gifted.toLowerCase();
+        // force to lowercase
+        if (name !== undefined)
+          name = name.toString().toLowerCase();
+        if (sender !== undefined)
+          sender = sender.toString().toLowerCase();
+        if (gifted !== undefined)
+          gifted = gifted.toString().toLowerCase();
 
         db.Sub.create({ name, amount, tier, gifted, sender, subExtension, month, message })
         .catch((err) => {
@@ -256,7 +268,7 @@ function handleTestEvent(data)
 
         /* Create a database entry for the buyer or update their tip */
         var { name, message } = ev;
-        name = name.toLowerCase();
+        name = name.toString().toLowerCase();
 
         db.Tip.create({ name, amount, message })
         .catch((err) => {
@@ -269,7 +281,7 @@ function handleTestEvent(data)
         //console.log(data);
         var ev = data.event;
         var {name, amount, message} = ev;
-        name = name.toLowerCase();
+        name = name.toString().toLowerCase();
         
         console.log(`${name} cheered ${amount} bits`);
 
