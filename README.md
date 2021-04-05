@@ -88,3 +88,31 @@ delete from sqlite_sequence where name='Subs' OR name="Tips" OR name="Bits";
 SELECT name from Subs WHERE gifted=false OR gifted is null UNION SELECT sender from Subs WHERE gifted=true UNION SELECT name from Tips UNION SELECT name from Bits
 
 UPDATE Bits SET name='Goth_Queen_Clique' WHERE id=28
+
+// Get Duplicate Subs
+SELECT name, COUNT(name) FROM Subs GROUP BY name HAVING COUNT(name)>1;
+
+BUGS
+====
+
+The Stream Elements API does not show when a user has subscribed in advance (eg. soso has subscribed for 2 months in advance).
+
+==> event
+{
+  _id: '606a74569c0ab5e17f74af10',
+  channel: '5f77ae391e59dae557adeb4f',
+  type: 'subscriber',
+  provider: 'twitch',
+  flagged: false,
+  data: {
+    username: 'dono_thegoat',
+    providerId: '618183822',
+    displayName: 'dono_thegoat',
+    amount: 1,
+    tier: '1000',
+    quantity: 0,
+    avatar: 'https://cdn.streamelements.com/static/default-avatar.png'
+  },
+  createdAt: '2021-04-05T02:22:14.484Z',
+  updatedAt: '2021-04-05T02:22:14.484Z'
+}

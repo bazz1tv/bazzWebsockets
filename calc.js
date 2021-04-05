@@ -121,10 +121,14 @@ async function calcEntries(user)
         gifted: {
             [db.Sequelize.Op.or]: [false, null],
         }
-      }
+      },
+      order: [
+        ['amount', 'DESC']
+      ],
+      limit: 1
     });
 
-    //console.log(subs);
+    console.log(subs);
     subs.forEach(sub => {
         if (sub.tier == "1000" || sub.tier == "prime")
         {
