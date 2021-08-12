@@ -392,6 +392,19 @@ async function main()
         let amount = (myArgs.length == 2) ? parseInt(myArgs[1]) : 0;
         console.log(await getTopScores(amount));
     }
+    else if (myArgs[0] == 'printNames')
+    {
+      let everyone = await getTopScores(0);
+      for (let i = 0; i < everyone.length; i+=1)
+      {
+        let obj = everyone[i];
+        //console.log(`obj.name = '${obj.name}', name = '${name}'`)
+        for (let t = 0; t < obj.entries; t+=1)
+        {
+          console.log(obj.name)
+        }
+      }
+    }
     else if (myArgs[0] == 'getNumEntrants')
     {
         console.log(await getNumEntrants());
