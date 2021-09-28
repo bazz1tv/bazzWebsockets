@@ -374,7 +374,35 @@ http.createServer(async function (req, res) {
     else res.writeHead(200, {'Content-Type': 'text/html'});
   const {pathname, query, href} = url.parse(req.url, true);
   console.log(`web server request: ${href}`);
-  if (pathname == "/bazz/ExerciseRemote")
+  if (pathname == '/bazz/mediaState')
+  {
+    console.log(`GetMediaState() => source: '${query.source}'`);
+    obs.send('GetMediaState', {
+        'sourceName': query.source,
+    })
+    .then((data) => {
+      console.log(`${data.mediaState}`);
+      response = data.mediaState;
+    })
+    .catch(err => { // Promise convention dicates you have a catch on every chain.
+        console.log(err);
+    });
+  }
+  else if (pathname == '/bazz/mediaTime')
+  {
+    console.log(`GetMediaTime() => source: '${query.source}'`);
+    obs.send('GetMediaTime', {
+        'sourceName': query.source,
+    })
+    .then((data) => {
+      console.log(data);
+      response = data;
+    })
+    .catch(err => { // Promise convention dicates you have a catch on every chain.
+        console.log(err);
+    });
+  }
+  else if (pathname == "/bazz/ExerciseRemote")
   {
     let file = __dirname + '/public_html/' + "exerciseRemote.html";
     console.log(`file = '${file}'`)
@@ -386,9 +414,20 @@ http.createServer(async function (req, res) {
       response = JSON.stringify(err);
     }
   }
+  else if (pathname == '/bazz/twitchClips')
+  {
+    response = '<iframe \
+   src="https://clips.twitch.tv/embed?clip=FamousConcernedOwlPMSTwin-K7pk_farGkktmfk0&parent=localhost&parent=bazz1.com" width="1080" height="1080" allowfullscreen="true"> \
+    </iframe>'
+  }
   else if (query.cmd === "nukem")
   {
     response = nukem();
+  }
+  else if (query.cmd === "setmsg")
+  {
+    //response = query.msg;
+    SetTextGDIPlusText("msg", query.msg);
   }
   else if (query.cmd === "GetPoolMoney")
   {
