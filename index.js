@@ -427,7 +427,42 @@ http.createServer(async function (req, res) {
   else if (query.cmd === "setmsg")
   {
     //response = query.msg;
-    SetTextGDIPlusText("msg", query.msg);
+    await SetTextGDIPlusText("msg", query.msg);
+  }
+  else if (query.cmd === "setfilter")
+  {
+    /* Color Source Settings look like:
+      sourceSettings: { color: 268435711, height: 1080, width: 1920 }
+    */
+    const alpha = 16
+    var sourceSettings = { color: 0 }
+    var sourceName = "ColorOverlay"
+
+    console.log(query)
+
+    // console.log(await GetSourceSettings(sourceName))
+    // #FF0000FF ( ALPHA | B | G | R )
+    // Convert eg. #FF0000 => #FF0000FF
+
+    if ( query.color.toLowerCase() === "off" )
+    {
+      //await SetSourceVisibility("overlay", sourceName, false)
+      response = "Turned off Color Filter"
+    }
+    else
+    {
+      var o = hex2rgb(query.color);
+      if (o === false) {
+        response = 'Enter valid hex code for input.  E.g. #f0db4f. Input: ' + query.color
+      }
+      else
+      {
+        sourceSettings.color = alpha << 24 | (o.b << 16) | (o.g << 8) | (o.r << 0);
+        await SetSourceSettings(sourceName, sourceSettings)
+        //await SetSourceVisibility("overlay", sourceName, true)
+        response = "Set Color Filter to " + query.color
+      }
+    }
   }
   else if (query.cmd === "GetPoolMoney")
   {
@@ -672,6 +707,69 @@ function SetTextGDIPlusText(source, text)
     } while (retry && retry_times >= 0)
 }
 
+function GetSourceSettings(source)
+{
+    let retry;
+    let retry_times = 2;
+    let result = 0;
+
+    do {
+        retry = false;
+        console.log('GetSourceSettings() => source: ' + `'${source}'`);
+        result = obs.send('GetSourceSettings', {
+            'sourceName': source
+        })
+        .catch(err => { // Promise convention dicates you have a catch on every chain.
+            console.log(err);
+            if (err.code == 'NOT_CONNECTED')
+            {
+                connect_obs(obs);
+            }
+            retry_times--;
+            retry = true;
+        });
+    } while (retry && retry_times >= 0)
+    return result;
+}
+// Helper function for setfilter
+function hex2rgb(hex) {
+  var validHEXInput = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!validHEXInput) {
+      return false;
+  }
+  var output = {
+    r: parseInt(validHEXInput[1], 16),
+    g: parseInt(validHEXInput[2], 16),
+    b: parseInt(validHEXInput[3], 16),
+  };
+  return output;
+}
+
+function SetSourceSettings(sourceName, sourceSettings)
+{
+    let retry;
+    let retry_times = 2;
+    let result = 0;
+
+    do {
+        retry = false;
+        console.log('SetSourceSettings() => sourceName: ' + `'${sourceName}'`);
+        result = obs.send('SetSourceSettings', {
+            'sourceName': sourceName,
+            'sourceSettings': sourceSettings
+        })
+        .catch(err => { // Promise convention dicates you have a catch on every chain.
+            console.log(err);
+            if (err.code == 'NOT_CONNECTED')
+            {
+                connect_obs(obs);
+            }
+            retry_times--;
+            retry = true;
+        });
+    } while (retry && retry_times >= 0)
+    return result;
+}
 
 function unlockTier(vis)
 {
