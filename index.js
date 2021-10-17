@@ -449,6 +449,11 @@ http.createServer(async function (req, res) {
       //await SetSourceVisibility("overlay", sourceName, false)
       response = "Turned off Color Filter"
     }
+    else if ( query.color.toLowerCase() === "rainbow" )
+    {
+      var intervalID = setInterval( doRainbow, 350);
+      setTimeout(function() { clearInterval(intervalID) }, 10000);
+    }
     else
     {
       var o = hex2rgb(query.color);
@@ -743,6 +748,28 @@ function hex2rgb(hex) {
     b: parseInt(validHEXInput[3], 16),
   };
   return output;
+}
+
+function doRainbow()
+{
+  const alpha = 16
+  let sourceSettings = { color: 0 }
+  let sourceName = "ColorOverlay"
+  let colors = [0xff0000, 0xffff00, 0xff00ff,
+                0x00ff00, 0x00ffff, 0x0000ff]
+  if( typeof doRainbow.counter == 'undefined' || doRainbow.counter == colors.length) {
+    doRainbow.counter = 0;
+  }
+
+  //console.log("counter = " + doRainbow.counter)
+
+  let o = colors[doRainbow.counter]
+  //console.log("o = " + o)
+  sourceSettings.color = (alpha << 24) | o
+  //console.log("final color = " + sourceSettings.color)
+  SetSourceSettings(sourceName, sourceSettings)
+
+  doRainbow.counter++;
 }
 
 function SetSourceSettings(sourceName, sourceSettings)
