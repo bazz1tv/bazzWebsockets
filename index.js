@@ -428,6 +428,7 @@ http.createServer(async function (req, res) {
   {
     //response = query.msg;
     SetTextGDIPlusText("msg", query.msg);
+    response = 'Set the message to "' + query.msg + '"!'
   }
   else if (query.cmd === "setfilter")
   {
