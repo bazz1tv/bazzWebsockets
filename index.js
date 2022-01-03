@@ -5,36 +5,83 @@ console.log(`In Mode: ${process.env.NODE_ENV}`);
 const JWT = require('./token.js');
 const db = require('./models'); // new require for db object
 
+////////// STREAMER.BOT WEBSOCKET CLIENT //////////////
+const WS = require('ws');
+
+const ws = new WS.WebSocket('ws://127.0.0.1:8081/');
+
+ws.on('open', function open() {
+  console.log("SB Socket connected");
+});
+
+ws.on('message', function message(data) {
+  console.log('received: %s', data);
+});
+
+function SBDoAction(name) {
+  ws.send('{\
+    "request": "DoAction",\
+    "action": {\
+      "name": "' + name + '"\
+    },\
+    "id": "1",\
+  }');
+}
+
+function resetCountupTimer() {
+  SBDoAction('resetCountupTimer')
+}
+
+function stopCountupTimer() {
+  SBDoAction('stopCountupTimer')
+}
+
+function startCountupTimer() {
+  SBDoAction('startCountupTimer')
+}
+
+function hideCountupTimer() {
+  SBDoAction('hideCountupTimer')
+}
+
+function showCountupTimer() {
+  SBDoAction('showCountupTimer')
+}
+
+////////// END STREAMER.BOT WEBSOCKET CLIENT //////////////
+
+
 const io = require("socket.io-client");
-const socket = io('https://realtime.streamelements.com', {
+
+const SEsocket = io('https://realtime.streamelements.com', {
     transports: ['websocket']
 });
 
 // Socket connected
-socket.on('connect', onConnect);
+SEsocket.on('connect', SEonConnect);
 
 // Socket got disconnected
-socket.on('disconnect', onDisconnect);
+SEsocket.on('disconnect', SEonDisconnect);
 
 // Socket is authenticated
-socket.on('authenticated', onAuthenticated);
+SEsocket.on('authenticated', SEonAuthenticated);
 
-socket.on('event', (data) => {
+SEsocket.on('event', (data) => {
     console.log("==> event");
     handleRealEvent(data);
 });
-socket.on('event:test', (data) => {
+SEsocket.on('event:test', (data) => {
     console.log("==> event:test");
     if (process.env.NODE_ENV == "test")
         handleTestEvent(data);
 });
-socket.on('event:update', (data) => {
+SEsocket.on('event:update', (data) => {
     console.log("==> event:update");
     console.log(data);
 
     handleRealEventUpdate(data);
 });
-socket.on('event:reset', (data) => {
+SEsocket.on('event:reset', (data) => {
     console.log("==> event:reset");
     console.log(data);
     // Structure as on https://github.com/StreamElements/widgets/blob/master/CustomCode.md#on-session-update
@@ -294,20 +341,20 @@ function handleTestEvent(data)
     }
 }
 
-function onConnect() {
+function SEonConnect() {
     console.log('Successfully connected to the websocket');
-    socket.emit('authenticate', {
+    SEsocket.emit('authenticate', {
         method: 'jwt',
         token: JWT
     });
 }
 
-function onDisconnect() {
+function SEonDisconnect() {
     console.log('Disconnected from websocket');
     // Reconnect
 }
 
-function onAuthenticated(data) {
+function SEonAuthenticated(data) {
     const {
         channelId
     } = data;
@@ -520,6 +567,28 @@ http.createServer(async function (req, res) {
     response = ''; //"Ended Exercise Timer " + exCounter
   }
 /////////////////////////////////////////////////////////
+///////////COUNTUP TIMER REMOTE////////////
+  else if (query.cmd === "resetCountupTimer") {
+    resetCountupTimer();
+    response = '';
+  }
+  else if (query.cmd === "stopCountupTimer") {
+    stopCountupTimer();
+    response = '';
+  }
+  else if (query.cmd === "startCountupTimer") {
+    startCountupTimer();
+    response = '';
+  }
+  else if (query.cmd === "hideCountupTimer") {
+    hideCountupTimer();
+    response = '';
+  }
+  else if (query.cmd === "showCountupTimer") {
+    showCountupTimer();
+    response = '';
+  }
+///////////////////////////////////////////
 // LED GUITAR STUFFS
   else if (query.cmd === "glava")
   {
