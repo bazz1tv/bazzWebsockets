@@ -1,3 +1,22 @@
+if (process.platform === "win32") {
+  var rl = require("readline").createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.on("SIGINT", function () {
+    process.emit("SIGINT");
+  });
+}
+
+process.on("SIGINT", function () {
+  //graceful shutdown
+  console.log("SIGINT HANDLER");
+  freePIEclient.destroy();
+
+  process.exit();
+});
+
 /* WEB SOCKETS AND STREAM ELEMENTS SECTION */
 /////////////////////////////////////////////
 console.log(`In Mode: ${process.env.NODE_ENV}`);
@@ -9,20 +28,28 @@ const db = require('./models'); // new require for db object
 var net = require('net');
 
 var freePIEclient = new net.Socket();
-freePIEclient.connect(8097, '127.0.0.1', function() {
-  console.log('FreePIE TCP Socket Client Connected');
-  //client.write('Hello, server! Love, Client.');
-});
+
+function connectfreePIEclient() {
+  freePIEclient.connect(8097, '127.0.0.1')
+}
 
 freePIEclient.on('data', function(data) {
-  console.log('Received: ' + data);
+  console.log('freePIEclient Received: ' + data);
   //client.destroy(); // kill client after server's response
 });
 
 freePIEclient.on('close', function() {
-  console.log('Connection closed');
+  console.log('freePIEclient Connection closed');
+  setTimeout(connectfreePIEclient, 10000);
 });
 
+// Connect the freePIE client
+freePIEclient.on('error', function(err) {
+  console.log("ERROR: freePIEclient not connected. Make sure FreePIE script is running");
+});
+freePIEclient.connect(8097, '127.0.0.1', function() {
+  console.log('FreePIE TCP Socket Client Connected');
+})
 
 ////////// STREAMER.BOT WEBSOCKET CLIENT //////////////
 const WS = require('ws');
