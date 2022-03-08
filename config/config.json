@@ -1,16 +1,16 @@
 {
   "development": {
     "dialect": "sqlite",
-    "storage": "./database.sqlite3",
+    "storage": "./databases/database.sqlite3",
     "logging": false
   },
   "test": {
     "dialect": "sqlite",
-    "storage": "./test3.sqlite3",
+    "storage": "./databases/test3.sqlite3",
     "logging": false
   },
   "production": {
     "dialect": "sqlite",
-    "storage": "./database.sqlite3"
+    "storage": "./databases/database.sqlite3"
   }
 }

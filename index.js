@@ -5,21 +5,79 @@ console.log(`In Mode: ${process.env.NODE_ENV}`);
 const JWT = require('./token.js');
 const db = require('./models'); // new require for db object
 
+////// FreePIE TCP Socket Client //////////////////////
+var net = require('net');
+
+var freePIEclient = new net.Socket();
+freePIEclient.connect(8097, '127.0.0.1', function() {
+  console.log('FreePIE TCP Socket Client Connected');
+  //client.write('Hello, server! Love, Client.');
+});
+
+freePIEclient.on('data', function(data) {
+  console.log('Received: ' + data);
+  //client.destroy(); // kill client after server's response
+});
+
+freePIEclient.on('close', function() {
+  console.log('Connection closed');
+});
+
+
 ////////// STREAMER.BOT WEBSOCKET CLIENT //////////////
 const WS = require('ws');
 
-const ws = new WS.WebSocket('ws://127.0.0.1:8081/');
+function connectSBWebSocket()
+{
+    sbws = new WS.WebSocket('ws://127.0.0.1:8081/');
 
-ws.on('open', function open() {
-  console.log("SB Socket connected");
-});
+    sbws.on('open', function open() {
+      console.log("SB Socket connected");
+      sbws.send(JSON.stringify(
+        {
+          "request": "Subscribe",
+          "events": {
+            "raw": [ "Action" ]
+          },
+          "id": "124"
+        })
+      )
+    })
 
-ws.on('message', function message(data) {
-  console.log('received: %s', data);
-});
+    sbws.on('message', function message(data) {
+      //console.log('SB received: %s', data);
+      const wsdata = JSON.parse(data);
+      //console.log('0')
+      if (wsdata.hasOwnProperty('event'))
+      {
+        //console.log('1')
+        if (wsdata.event.source === "Raw" &&
+            wsdata.event.type === 'Action') {
+          if (wsdata.data.name === 'ignoreInputFalse')
+          {
+            console.log("ignoreInputFalse")
+            // TCP Client connection to FreePIE
+            freePIEclient.write("1")
+          }
+          else if (wsdata.data.name === 'ignoreInputTrue')
+          {
+            console.log ("ignoreInputTrue")
+            freePIEclient.write("2")
+          }
+        }
+      }
+    });
+
+    sbws.on('close', function close() {
+        console.log('SB socket closed');
+        setTimeout(connectSBWebSocket, 10000);
+    })
+}
+
+connectSBWebSocket();
 
 function SBDoAction(name) {
-  ws.send('{\
+  sbws.send('{\
     "request": "DoAction",\
     "action": {\
       "name": "' + name + '"\
@@ -589,6 +647,11 @@ http.createServer(async function (req, res) {
     response = '';
   }
 ///////////////////////////////////////////
+////// Orange Juice Thing /////////////////////
+  else if (query.cmd === "OJDeposit") {
+
+  }
+///////////////////////////////////////////
 // LED GUITAR STUFFS
   else if (query.cmd === "glava")
   {
@@ -620,10 +683,10 @@ http.createServer(async function (req, res) {
     oscLayerClipConnect(2, 13)
     response = "Set Guitar to CAM1 MODE!!"
   }
-  else if (query.cmd === "gpastel")
+  else if (query.cmd === "gswirl")
   {
     oscLayerClipConnect(2, 14)
-    response = "Set Guitar to PASTEL MODE!!"
+    response = "Set Guitar to SWIRL MODE!!"
   }
   else if (query.cmd === "gcolor")
   {
@@ -672,6 +735,64 @@ http.createServer(async function (req, res) {
   console.log(`response = '${response}'`);
   res.end(response);
 }).listen(11111);
+
+http.createServer(async function (req, res) {
+  var response = "";
+  res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Request-Method', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, GET');
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    if ( req.method === 'OPTIONS' ) {
+        res.writeHead(200);
+        res.end();
+        return;
+    }
+    else res.writeHead(200, {'Content-Type': 'text/html'});
+  const {pathname, query, href} = url.parse(req.url, true);
+  console.log(`PRIVATE web server request: ${href}`);
+  
+///////////////////////////////////////////
+////// Orange Juice Thing /////////////////////
+  if (query.cmd === "OJDeposit") {
+    response = "HI!"
+  }
+  else if (query.cmd === 'GuessLick') {
+    const name = query.name
+    var r = /\d+/; // Match a group of digits
+    const amount = parseInt(query.guess.match(r))
+    
+    db.LickGuess.create({ name, amount })
+      .catch((err) => {
+          console.log('***There was an error creating a LickGuess db entry', name, amount)
+          return res.status(400).send(err)
+      });
+
+    response = name + " guessed The Bazz LickAthon will take " + amount + " licks!!"
+  }
+  else if (query.cmd === 'GetLick') {
+    const name = query.name;
+    const licks = await db.LickGuess.findAll({
+      where: {
+        name: name,
+      },
+      order: [
+        ['amount', 'DESC']
+      ],
+      limit: 1
+    });
+
+    //console.log(licks);
+
+    licks.forEach(lick => {
+      response = lick.name + ", You already guessed " + lick.amount + " Licks! :P";
+    });
+  }
+
+  console.log(`Handled '${pathname}', '${query.cmd}'`);
+
+  console.log(`response = '${response}'`);
+  res.end(response);
+}).listen(11112);
 
 function GetLockedTierHelper(poolmoney)
 {
