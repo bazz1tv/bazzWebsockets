@@ -47,9 +47,11 @@ freePIEclient.on('close', function() {
 freePIEclient.on('error', function(err) {
   console.log("ERROR: freePIEclient not connected. Make sure FreePIE script is running");
 });
-freePIEclient.connect(8097, '127.0.0.1', function() {
+
+freePIEclient.on('connect', function() {
   console.log('FreePIE TCP Socket Client Connected');
 })
+connectfreePIEclient()
 
 ////////// STREAMER.BOT WEBSOCKET CLIENT //////////////
 const WS = require('ws');
@@ -84,12 +86,12 @@ function connectSBWebSocket()
           {
             console.log("ignoreInputFalse")
             // TCP Client connection to FreePIE
-            freePIEclient.write("1")
+            freePIEclient.write("ignoreInputFalse")
           }
           else if (wsdata.data.name === 'ignoreInputTrue')
           {
             console.log ("ignoreInputTrue")
-            freePIEclient.write("2")
+            freePIEclient.write("ignoreInputTrue")
           }
         }
       }
